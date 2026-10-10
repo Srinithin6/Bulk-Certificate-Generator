@@ -1,0 +1,13 @@
+{
+  "title": "Data Science Bootcamp",
+  "issued_by": "Aereo Academy",
+  "issue_date": "2026-10-01",
+  "template": "classic",
+  "signatory_name": "Dr. Priya Nair",
+  "signatory_title": "Program Director",
+  "recipients": [
+    {"name": "Asha Rao", "email": "asha@example.com", "remarks": "Grade: A"},
+    {"name": "Ben Carter", "email": "ben@example.com"},
+    {"name": "", "email": "invalid-example@example.com"}
+  ]
+}

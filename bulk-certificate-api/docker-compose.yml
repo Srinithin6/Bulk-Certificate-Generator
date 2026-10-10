@@ -1,0 +1,46 @@
+# API + PostgreSQL.  Start: docker compose up --build -d      Stop: docker compose down
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-certs}
+      POSTGRES_DB: ${POSTGRES_DB:-certs}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-certs}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-certs}
+      API_KEY: ${API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      MAX_RECIPIENTS: ${MAX_RECIPIENTS:-5000}
+      WORKERS: ${WORKERS:-2}
+      RETENTION_DAYS: ${RETENTION_DAYS:-7}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      DEFAULT_ISSUER: ${DEFAULT_ISSUER:-Certificate Authority}
+    ports:
+      - "8000:8000"
+    volumes:
+      - certdata:/data   # generated PDFs survive container restarts
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  pgdata:
+  certdata:
